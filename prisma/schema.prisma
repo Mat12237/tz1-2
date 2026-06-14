@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Trainer {
+  id         String   @id @default(uuid())
+  surname    String
+  name       String
+  patronymic String?
+  phone      String
+  status     String   @default("WORKING")
+  clients    Client[]
+}
+
+model Client {
+  id         String          @id @default(uuid())
+  surname    String
+  name       String
+  patronymic String?
+  birthday   String
+  phone      String
+  email      String
+  is_active  Boolean         @default(true)
+  trainer_id String?
+  locker_id  String?         @unique
+  trainer    Trainer?        @relation(fields: [trainer_id], references: [id])
+  locker     Locker?
+  services   ClientService[]
+}
+
+model Locker {
+  id        String  @id @default(uuid())
+  number    Int     @unique
+  client_id String? @unique
+  client    Client? @relation(fields: [client_id], references: [id])
+}
+
+model Service {
+  id      String          @id
+  name    String
+  price   Int
+  clients ClientService[]
+}
+
+model ClientService {
+  client_id  String
+  service_id String
+  client     Client  @relation(fields: [client_id], references: [id], onDelete: Cascade)
+  service    Service @relation(fields: [service_id], references: [id], onDelete: Cascade)
+
+  @@id([client_id, service_id])
+}
